@@ -391,7 +391,7 @@ def load_resnet():
         st.error(f"Erreur chargement ResNet: {e}")
         return None
 
-# Catégories Rakuten
+# Catégories Rakuten avec icônes
 CATEGORIES = {
     0: "Livre",
     1: "Musique, CD/DVD, Blu-Ray", 
@@ -407,6 +407,24 @@ CATEGORIES = {
     11: "Mode",
     12: "Beauté",
     13: "Jouet, Enfant, Puériculture"
+}
+
+# Icônes correspondantes pour chaque catégorie
+CATEGORY_ICONS = {
+    0: "📚",  # Livre
+    1: "🎵",  # Musique, CD/DVD, Blu-Ray
+    2: "🎮",  # Jeux vidéo, Console
+    3: "📱",  # Téléphonie, Tablette
+    4: "💻",  # Informatique, Logiciel
+    5: "📺",  # TV, Image et Son
+    6: "🏠",  # Maison
+    7: "🔌",  # Électroménager
+    8: "🍕",  # Alimentation, Boisson
+    9: "🔨",  # Brico, Jardin, Animalerie
+    10: "⚽", # Sport, Loisirs
+    11: "👕", # Mode
+    12: "💄", # Beauté
+    13: "🧸"  # Jouet, Enfant, Puériculture
 }
 
 # Préprocessing image
@@ -691,8 +709,9 @@ if 'prediction_result' in st.session_state:
         
         for i, category in enumerate(category_list):
             col_idx = i % 2
+            icon = CATEGORY_ICONS.get(i, "📦")  # Icône spécifique ou générique
             with cols[col_idx]:
-                if st.button(f"📦 {category}", key=f"cat_btn_{i}", use_container_width=True):
+                if st.button(f"{icon} {category}", key=f"cat_btn_{i}", use_container_width=True):
                     selected_category = category
                     st.session_state.selected_correction = category
         
