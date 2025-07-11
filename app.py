@@ -405,10 +405,41 @@ def predict_category(uploaded_image, designation="", description=""):
             full_text = "produit"  # texte minimal
         text_vec = vectorizer.transform([full_text]).toarray().squeeze()
         
-        # 3. Fusion vecteurs texte + image
-        full_vec = np.concatenate([text_vec, image_vec]).reshape(1, -1)
+        # Debug des dimensions
+        st.info(f"Debug: Text features: {text_vec.shape}, Image features: {image_vec.shape}")
         
-        # 4. Prédiction
+        # 3. Vérifier la compatibilité des dimensions
+        expected_features = clf.coef_.shape[1] if hasattr(clf, 'coef_') else None
+        if expected_features:
+            st.info(f"Debug: Model expects {expected_features} features total")
+            
+            # Ajuster les dimensions si nécessaire
+            total_current = len(text_vec) + len(image_vec)
+            if total_current != expected_features:
+                # Truncate ou pad selon les besoins
+                if total_current > expected_features:
+                    # Truncate les features image
+                    needed_image_features = expected_features - len(text_vec)
+                    if needed_image_features > 0:
+                        image_vec = image_vec[:needed_image_features]
+                    else:
+                        # Truncate text si nécessaire
+                        text_vec = text_vec[:expected_features]
+                        image_vec = np.array([])
+                else:
+                    # Pad avec des zéros
+                    missing = expected_features - total_current
+                    image_vec = np.concatenate([image_vec, np.zeros(missing)])
+        
+        # 4. Fusion vecteurs texte + image
+        if len(image_vec) > 0:
+            full_vec = np.concatenate([text_vec, image_vec]).reshape(1, -1)
+        else:
+            full_vec = text_vec.reshape(1, -1)
+        
+        st.info(f"Debug: Final vector shape: {full_vec.shape}")
+        
+        # 5. Prédiction
         pred = clf.predict(full_vec)[0]
         probabilities = clf.predict_proba(full_vec)[0]
         confidence = probabilities[pred]
@@ -416,6 +447,10 @@ def predict_category(uploaded_image, designation="", description=""):
         return pred, confidence
     except Exception as e:
         st.error(f"Erreur prédiction: {e}")
+        # Afficher plus de détails pour debug
+        st.error(f"Type d'erreur: {type(e).__name__}")
+        import traceback
+        st.error(f"Traceback: {traceback.format_exc()}")
         return None, None
 
 # ------------------- Interface Streamlit -------------------
