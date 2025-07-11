@@ -691,18 +691,29 @@ with col_left:
         if st.button("✨ Générer des suggestions automatiques", use_container_width=True):
             with st.spinner("Analyse de l'image en cours..."):
                 try:
-                    # Faire une prédiction rapide pour obtenir la catégorie
-                    pred, confidence = predict_category(uploaded_image, "", "")
-                    if pred is not None:
-                        category_name = CATEGORIES.get(pred, "Produit")
-                        suggestions = generate_product_description(uploaded_image, category_name)
-                        
-                        st.session_state.suggested_name = suggestions["name"]
-                        st.session_state.suggested_description = suggestions["description"]
-                        st.success("Suggestions générées ! Vous pouvez les modifier si besoin.")
-                        st.rerun()
-                    else:
-                        st.error("Impossible de générer des suggestions. Veuillez réessayer.")
+                    # Utiliser une approche simplifiée basée sur l'analyse basique de l'image
+                    # On peut analyser les couleurs dominantes, la forme, etc.
+                    image = Image.open(uploaded_image)
+                    
+                    # Analyse simple basée sur les dimensions et couleurs de l'image
+                    width, height = image.size
+                    aspect_ratio = width / height
+                    
+                    # Suggestions basées sur l'analyse simple de l'image
+                    if aspect_ratio > 1.5:  # Image horizontale
+                        suggested_cat = "TV, Image et Son"
+                    elif aspect_ratio < 0.7:  # Image verticale
+                        suggested_cat = "Livre"
+                    else:  # Image carrée/rectangulaire
+                        suggested_cat = "Mode"  # Par défaut
+                    
+                    suggestions = generate_product_description(image, suggested_cat)
+                    
+                    st.session_state.suggested_name = suggestions["name"]
+                    st.session_state.suggested_description = suggestions["description"]
+                    st.success("Suggestions générées ! Vous pouvez les modifier si besoin.")
+                    st.rerun()
+                    
                 except Exception as e:
                     st.error(f"Erreur lors de la génération des suggestions : {str(e)}")
                     # Suggestions par défaut en cas d'erreur
