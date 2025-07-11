@@ -264,18 +264,45 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
-    /* Correction du sélecteur de catégorie */
-    .category-selector {
-        background: var(--rakuten-white) !important;
+    /* Forcer les couleurs du selectbox - approche plus agressive */
+    .stSelectbox div[data-baseweb="select"] > div,
+    .stSelectbox div[data-baseweb="select"] > div > div,
+    .stSelectbox [data-testid="stSelectbox"] > div > div,
+    .stSelectbox [data-testid="stSelectbox"] > div > div > div {
+        background-color: var(--rakuten-white) !important;
+        color: var(--rakuten-dark-gray) !important;
         border: 2px solid var(--rakuten-border) !important;
-        border-radius: 8px !important;
-        padding: 1.5rem !important;
-        margin-top: 1rem !important;
+        border-radius: 6px !important;
     }
     
-    .category-selector h4 {
+    /* Dropdown ouvert */
+    .stSelectbox [role="listbox"],
+    .stSelectbox [data-baseweb="popover"] > div,
+    .stSelectbox ul,
+    .stSelectbox ul > li {
+        background-color: var(--rakuten-white) !important;
+        color: var(--rakuten-dark-gray) !important;
+        border: 1px solid var(--rakuten-border) !important;
+    }
+    
+    /* Options individuelles */
+    .stSelectbox [role="option"],
+    .stSelectbox li {
+        background-color: var(--rakuten-white) !important;
+        color: var(--rakuten-dark-gray) !important;
+        padding: 0.75rem !important;
+    }
+    
+    .stSelectbox [role="option"]:hover,
+    .stSelectbox li:hover {
+        background-color: var(--rakuten-light-gray) !important;
         color: var(--rakuten-red) !important;
-        margin-bottom: 1rem !important;
+    }
+    
+    /* Option sélectionnée */
+    .stSelectbox [aria-selected="true"] {
+        background-color: var(--rakuten-red) !important;
+        color: var(--rakuten-white) !important;
     }
     
     /* Success/Error messages */
@@ -637,24 +664,53 @@ if 'prediction_result' in st.session_state:
     if st.session_state.get('show_category_selector', False):
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Container avec style Rakuten
+        # Container avec style Rakuten et styles inline pour forcer
         st.markdown("""
-        <div class="category-selector">
-            <h4>🏷️ Sélectionnez la bonne catégorie</h4>
+        <div style="
+            background: white !important;
+            border: 2px solid #e0e0e0 !important;
+            border-radius: 8px !important;
+            padding: 1.5rem !important;
+            margin-top: 1rem !important;
+        ">
+            <h4 style="color: #bf0000 !important; margin-bottom: 1rem !important;">
+                🏷️ Sélectionnez la bonne catégorie
+            </h4>
         </div>
         """, unsafe_allow_html=True)
         
-        # Créer la liste des catégories pour le selectbox
-        category_options = ["Choisissez une catégorie..."] + list(CATEGORIES.values())
+        # Alternative : utiliser des boutons radio au lieu du selectbox
+        st.markdown("**Choisissez la catégorie correcte :**")
         
-        selected_category = st.selectbox(
-            "Catégorie correcte",
-            category_options,
-            key="category_correction",
-            label_visibility="collapsed"  # Masquer le label car on l'a dans le HTML
-        )
+        # Organiser en colonnes pour un meilleur affichage
+        cols = st.columns(2)
+        selected_category = None
         
-        if selected_category != "Choisissez une catégorie...":
+        # Créer des boutons radio pour chaque catégorie
+        category_list = list(CATEGORIES.values())
+        
+        for i, category in enumerate(category_list):
+            col_idx = i % 2
+            with cols[col_idx]:
+                if st.button(f"📦 {category}", key=f"cat_btn_{i}", use_container_width=True):
+                    selected_category = category
+                    st.session_state.selected_correction = category
+        
+        # Ou utiliser un selectbox avec style forcé
+        st.markdown("""
+        <style>
+        div[data-testid="stSelectbox"] > div > div {
+            background-color: white !important;
+            color: #333 !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Vérifier s'il y a une sélection
+        if 'selected_correction' in st.session_state:
+            selected_category = st.session_state.selected_correction
+            
+        if selected_category:
             # Trouver l'index de la catégorie sélectionnée
             correct_index = None
             for idx, cat_name in CATEGORIES.items():
@@ -666,9 +722,11 @@ if 'prediction_result' in st.session_state:
                 st.success(f"Merci ! Catégorie corrigée : **{selected_category}**")
                 
                 # Optionnel : sauvegarder la correction pour l'amélioration du modèle
-                if st.button("Confirmer cette correction"):
+                if st.button("✅ Confirmer cette correction", type="primary"):
                     st.success("Correction enregistrée ! Cela aidera à améliorer notre IA.")
                     # Ici vous pourriez sauvegarder la correction dans une base de données
+                    if 'selected_correction' in st.session_state:
+                        del st.session_state.selected_correction
                     st.session_state.show_category_selector = False
                     st.rerun()
     
