@@ -440,31 +440,46 @@ def predict_category(uploaded_image, designation="", description=""):
         st.info(f"Debug: Final vector shape: {full_vec.shape}")
         
         # 5. Prédiction
-        pred = clf.predict(full_vec)[0]
+        pred_raw = clf.predict(full_vec)[0]
         probabilities = clf.predict_proba(full_vec)[0]
         
         # Debug de la prédiction
-        st.info(f"Debug: Pred type: {type(pred)}, Pred value: {pred}")
+        st.info(f"Debug: Pred type: {type(pred_raw)}, Pred value: {pred_raw}")
         st.info(f"Debug: Probabilities shape: {probabilities.shape}")
         
-        # S'assurer que pred est un entier
-        if hasattr(pred, 'item'):
-            pred = pred.item()  # Convertir numpy scalar en int
-        elif isinstance(pred, (list, np.ndarray)):
-            pred = int(pred[0])  # Prendre le premier élément
-        else:
-            pred = int(pred)  # Forcer la conversion
-            
-        # Vérifier que pred est dans la plage valide
-        if pred < 0 or pred >= len(probabilities):
-            st.error(f"Prédiction invalide: {pred}, probabilities length: {len(probabilities)}")
+        # Le modèle retourne le nom de la catégorie, pas un index
+        # Trouver l'index correspondant dans notre dictionnaire CATEGORIES
+        category_name = pred_raw
+        pred_index = None
+        
+        # Chercher l'index de la catégorie prédite
+        for idx, cat_name in CATEGORIES.items():
+            if cat_name == category_name:
+                pred_index = idx
+                break
+        
+        # Si pas trouvé, chercher une correspondance partielle
+        if pred_index is None:
+            for idx, cat_name in CATEGORIES.items():
+                if category_name.lower() in cat_name.lower() or cat_name.lower() in category_name.lower():
+                    pred_index = idx
+                    break
+        
+        # Si toujours pas trouvé, utiliser l'index de la probabilité max
+        if pred_index is None:
+            pred_index = np.argmax(probabilities)
+            st.warning(f"Catégorie '{category_name}' non trouvée, utilisation de l'index {pred_index}")
+        
+        # Vérifier que l'index est valide
+        if pred_index < 0 or pred_index >= len(probabilities):
+            st.error(f"Index invalide: {pred_index}, probabilities length: {len(probabilities)}")
             return None, None
             
-        confidence = probabilities[pred]
+        confidence = probabilities[pred_index]
         
-        st.info(f"Debug: Final pred: {pred}, confidence: {confidence}")
+        st.info(f"Debug: Final pred_index: {pred_index}, category: {CATEGORIES.get(pred_index, 'Unknown')}, confidence: {confidence}")
         
-        return pred, confidence
+        return pred_index, confidence
     except Exception as e:
         st.error(f"Erreur prédiction: {e}")
         # Afficher plus de détails pour debug
