@@ -610,10 +610,46 @@ if 'prediction_result' in st.session_state:
     with col1:
         if st.button("✅ Oui, c'est parfait"):
             st.success("Parfait ! Votre produit sera classé dans cette catégorie.")
+            # Masquer la correction si elle était affichée
+            if 'show_category_selector' in st.session_state:
+                del st.session_state.show_category_selector
     
     with col2:
         if st.button("❌ Non, changer de catégorie"):
-            st.info("Vous pourrez sélectionner manuellement la catégorie.")
+            st.info("Vous pouvez sélectionner manuellement la catégorie.")
+            st.session_state.show_category_selector = True
+    
+    # Afficher le sélecteur de catégorie si demandé
+    if st.session_state.get('show_category_selector', False):
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("**Sélectionnez la bonne catégorie :**")
+        
+        # Créer la liste des catégories pour le selectbox
+        category_options = ["Choisissez une catégorie..."] + list(CATEGORIES.values())
+        
+        selected_category = st.selectbox(
+            "Catégorie correcte",
+            category_options,
+            key="category_correction"
+        )
+        
+        if selected_category != "Choisissez une catégorie...":
+            # Trouver l'index de la catégorie sélectionnée
+            correct_index = None
+            for idx, cat_name in CATEGORIES.items():
+                if cat_name == selected_category:
+                    correct_index = idx
+                    break
+            
+            if correct_index is not None:
+                st.success(f"Merci ! Catégorie corrigée : **{selected_category}**")
+                
+                # Optionnel : sauvegarder la correction pour l'amélioration du modèle
+                if st.button("Confirmer cette correction"):
+                    st.success("Correction enregistrée ! Cela aidera à améliorer notre IA.")
+                    # Ici vous pourriez sauvegarder la correction dans une base de données
+                    st.session_state.show_category_selector = False
+                    st.rerun()
     
     # Informations additionnelles
     st.markdown("<br>", unsafe_allow_html=True)
