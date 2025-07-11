@@ -442,7 +442,27 @@ def predict_category(uploaded_image, designation="", description=""):
         # 5. Prédiction
         pred = clf.predict(full_vec)[0]
         probabilities = clf.predict_proba(full_vec)[0]
+        
+        # Debug de la prédiction
+        st.info(f"Debug: Pred type: {type(pred)}, Pred value: {pred}")
+        st.info(f"Debug: Probabilities shape: {probabilities.shape}")
+        
+        # S'assurer que pred est un entier
+        if hasattr(pred, 'item'):
+            pred = pred.item()  # Convertir numpy scalar en int
+        elif isinstance(pred, (list, np.ndarray)):
+            pred = int(pred[0])  # Prendre le premier élément
+        else:
+            pred = int(pred)  # Forcer la conversion
+            
+        # Vérifier que pred est dans la plage valide
+        if pred < 0 or pred >= len(probabilities):
+            st.error(f"Prédiction invalide: {pred}, probabilities length: {len(probabilities)}")
+            return None, None
+            
         confidence = probabilities[pred]
+        
+        st.info(f"Debug: Final pred: {pred}, confidence: {confidence}")
         
         return pred, confidence
     except Exception as e:
