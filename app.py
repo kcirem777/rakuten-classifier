@@ -264,6 +264,20 @@ st.markdown("""
         font-weight: 600 !important;
     }
     
+    /* Correction du sélecteur de catégorie */
+    .category-selector {
+        background: var(--rakuten-white) !important;
+        border: 2px solid var(--rakuten-border) !important;
+        border-radius: 8px !important;
+        padding: 1.5rem !important;
+        margin-top: 1rem !important;
+    }
+    
+    .category-selector h4 {
+        color: var(--rakuten-red) !important;
+        margin-bottom: 1rem !important;
+    }
+    
     /* Success/Error messages */
     .stSuccess {
         background: #fff5f5 !important;
@@ -622,7 +636,13 @@ if 'prediction_result' in st.session_state:
     # Afficher le sélecteur de catégorie si demandé
     if st.session_state.get('show_category_selector', False):
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown("**Sélectionnez la bonne catégorie :**")
+        
+        # Container avec style Rakuten
+        st.markdown("""
+        <div class="category-selector">
+            <h4>🏷️ Sélectionnez la bonne catégorie</h4>
+        </div>
+        """, unsafe_allow_html=True)
         
         # Créer la liste des catégories pour le selectbox
         category_options = ["Choisissez une catégorie..."] + list(CATEGORIES.values())
@@ -630,7 +650,8 @@ if 'prediction_result' in st.session_state:
         selected_category = st.selectbox(
             "Catégorie correcte",
             category_options,
-            key="category_correction"
+            key="category_correction",
+            label_visibility="collapsed"  # Masquer le label car on l'a dans le HTML
         )
         
         if selected_category != "Choisissez une catégorie...":
