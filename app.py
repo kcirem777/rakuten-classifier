@@ -690,16 +690,25 @@ with col_left:
         # Générer des suggestions automatiques basées sur l'analyse de l'image
         if st.button("✨ Générer des suggestions automatiques", use_container_width=True):
             with st.spinner("Analyse de l'image en cours..."):
-                # Faire une prédiction rapide pour obtenir la catégorie
-                pred, confidence = predict_category(uploaded_image, "", "")
-                if pred is not None:
-                    category_name = CATEGORIES.get(pred, "Produit")
-                    suggestions = generate_product_description(uploaded_image, category_name)
-                    
-                    st.session_state.suggested_name = suggestions["name"]
-                    st.session_state.suggested_description = suggestions["description"]
-                    st.success("Suggestions générées ! Vous pouvez les modifier si besoin.")
-                    st.rerun()
+                try:
+                    # Faire une prédiction rapide pour obtenir la catégorie
+                    pred, confidence = predict_category(uploaded_image, "", "")
+                    if pred is not None:
+                        category_name = CATEGORIES.get(pred, "Produit")
+                        suggestions = generate_product_description(uploaded_image, category_name)
+                        
+                        st.session_state.suggested_name = suggestions["name"]
+                        st.session_state.suggested_description = suggestions["description"]
+                        st.success("Suggestions générées ! Vous pouvez les modifier si besoin.")
+                        st.rerun()
+                    else:
+                        st.error("Impossible de générer des suggestions. Veuillez réessayer.")
+                except Exception as e:
+                    st.error(f"Erreur lors de la génération des suggestions : {str(e)}")
+                    # Suggestions par défaut en cas d'erreur
+                    st.session_state.suggested_name = "Produit de qualité"
+                    st.session_state.suggested_description = "Article en bon état, prêt à être utilisé."
+                    st.warning("Suggestions par défaut générées.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_right:
