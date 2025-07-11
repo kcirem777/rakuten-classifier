@@ -372,13 +372,17 @@ def predict_category(uploaded_image, designation="", description=""):
 # ------------------- Interface Streamlit -------------------
 
 # Header Rakuten avec logo officiel
-st.markdown("""
+logo_html = '''
 <div class="rakuten-header">
     <div class="logo-container">
-        <img src="./rakuten-logo.png" alt="Rakuten" style="height: 60px; object-fit: contain;">
+        <svg width="200" height="60" viewBox="0 0 1200 400" xmlns="http://www.w3.org/2000/svg">
+            <text x="50" y="300" font-family="Arial, sans-serif" font-size="180" font-weight="bold" fill="#BF0000">Rakuten</text>
+            <path d="M50 320 L950 320 L980 360 L50 360 Z" fill="#BF0000"/>
+        </svg>
     </div>
 </div>
-""", unsafe_allow_html=True)
+'''
+st.markdown(logo_html, unsafe_allow_html=True)
 
 # Progress steps
 col1, col2, col3 = st.columns(3)
