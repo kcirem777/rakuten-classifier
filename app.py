@@ -29,7 +29,11 @@ if uploaded_image:
                     st.success("Classification terminée !")
                     st.rerun()
                 else:
-                    st.error("Errimport streamlit as st
+                    st.error("Erreur lors de la classification.")
+            except Exception as e:
+                st.error(f"Erreur: {str(e)}")
+else:
+    st.info("📋 Veuillez uploader une image pour commencer la classification")import streamlit as st
 import joblib
 import numpy as np
 from PIL import Image
