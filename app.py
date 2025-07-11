@@ -28,6 +28,7 @@ st.markdown("""
         --rakuten-light-gray: #f8f8f8;
         --rakuten-border: #e0e0e0;
         --rakuten-white: #ffffff;
+        --rakuten-dark-gray: #2c2c2c;
     }
     
     /* Background principal en blanc */
@@ -37,6 +38,17 @@ st.markdown("""
     
     .stApp {
         background-color: var(--rakuten-white) !important;
+    }
+    
+    /* Améliorer la visibilité du texte */
+    .stMarkdown, .stText, p, span, div {
+        color: var(--rakuten-dark-gray) !important;
+    }
+    
+    /* Labels et titres plus visibles */
+    label, .stSelectbox label, .stTextInput label, .stTextArea label {
+        color: var(--rakuten-black) !important;
+        font-weight: 600 !important;
     }
     
     /* Reset du style Streamlit */
@@ -72,17 +84,19 @@ st.markdown("""
         gap: 1rem;
     }
     
-    /* Container principal */
+    /* Container principal avec bordures visibles */
     .rakuten-container {
         max-width: 1200px;
         margin: 0 auto;
-        background: white;
+        background: var(--rakuten-white);
         border-radius: 8px;
+        border: 1px solid var(--rakuten-border);
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         overflow: hidden;
+        padding: 2rem;
     }
     
-    /* Section upload */
+    /* Section upload avec bordures visibles */
     .upload-section {
         background: var(--rakuten-light-gray);
         padding: 2rem;
@@ -186,9 +200,9 @@ st.markdown("""
         margin-top: 0.5rem;
     }
     
-    /* Sections */
+    /* Sections avec bordures et contrastes */
     .section-title {
-        color: var(--rakuten-black);
+        color: var(--rakuten-black) !important;
         font-size: 1.3rem;
         font-weight: 600;
         margin-bottom: 1rem;
@@ -196,12 +210,26 @@ st.markdown("""
         border-bottom: 2px solid var(--rakuten-red);
     }
     
-    /* Input styles */
+    /* Colonnes avec séparation visuelle */
+    .column-left {
+        padding: 1.5rem;
+        border-right: 1px solid var(--rakuten-border);
+        background: var(--rakuten-white);
+    }
+    
+    .column-right {
+        padding: 1.5rem;
+        background: var(--rakuten-white);
+    }
+    
+    /* Input styles avec bordures visibles */
     .stTextInput > div > div > input {
-        border: 1px solid var(--rakuten-border) !important;
+        border: 2px solid var(--rakuten-border) !important;
         border-radius: 6px !important;
         padding: 0.75rem !important;
         font-family: 'Roboto', sans-serif !important;
+        color: var(--rakuten-dark-gray) !important;
+        background: var(--rakuten-white) !important;
     }
     
     .stTextInput > div > div > input:focus {
@@ -209,10 +237,31 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(191, 0, 0, 0.2) !important;
     }
     
-    /* File uploader */
-    .uploadedFile {
-        border: 1px solid var(--rakuten-border) !important;
+    /* TextArea avec bordures */
+    .stTextArea > div > div > textarea {
+        border: 2px solid var(--rakuten-border) !important;
         border-radius: 6px !important;
+        padding: 0.75rem !important;
+        font-family: 'Roboto', sans-serif !important;
+        color: var(--rakuten-dark-gray) !important;
+        background: var(--rakuten-white) !important;
+    }
+    
+    .stTextArea > div > div > textarea:focus {
+        border-color: var(--rakuten-red) !important;
+        box-shadow: 0 0 0 2px rgba(191, 0, 0, 0.2) !important;
+    }
+    
+    /* File uploader avec bordures visibles */
+    .stFileUploader > div {
+        border: 2px solid var(--rakuten-border) !important;
+        border-radius: 8px !important;
+        background: var(--rakuten-light-gray) !important;
+    }
+    
+    .stFileUploader label {
+        color: var(--rakuten-black) !important;
+        font-weight: 600 !important;
     }
     
     /* Success/Error messages */
@@ -423,6 +472,7 @@ st.markdown('<h2 class="section-title">📸 Dites-nous en plus</h2>', unsafe_all
 col_left, col_right = st.columns([1, 1])
 
 with col_left:
+    st.markdown('<div class="column-left">', unsafe_allow_html=True)
     st.markdown("**Ajoutez une image de votre produit**")
     uploaded_image = st.file_uploader(
         "Téléversez une image",
@@ -433,8 +483,10 @@ with col_left:
     if uploaded_image:
         st.image(uploaded_image, caption="Image téléversée", use_column_width=True)
         st.session_state.uploaded_image = uploaded_image
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col_right:
+    st.markdown('<div class="column-right">', unsafe_allow_html=True)
     st.markdown("**Informations produit (optionnel)**")
     designation = st.text_input(
         "Nom du produit",
@@ -448,6 +500,7 @@ with col_right:
         height=100,
         help="Plus d'informations pour une meilleure classification"
     )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # Bouton de classification
 st.markdown("<br>", unsafe_allow_html=True)
