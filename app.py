@@ -449,7 +449,81 @@ def image_to_vec(uploaded_image):
         st.error(f"Erreur traitement image: {e}")
         return np.zeros(2048)
 
-def predict_category(uploaded_image, designation="", description=""):
+def generate_product_description(image, category_name):
+    """
+    Générer une description automatique basée sur l'image et la catégorie
+    """
+    try:
+        # Suggestions basées sur la catégorie prédite
+        suggestions = {
+            "Livre": {
+                "name": "Livre de fiction moderne",
+                "description": "Livre en bon état, couverture préservée, pages propres. Idéal pour les amateurs de lecture."
+            },
+            "Musique, CD/DVD, Blu-Ray": {
+                "name": "Album musical / Film DVD",
+                "description": "Support en excellent état, sans rayures. Boîtier d'origine inclus."
+            },
+            "Jeux vidéo, Console": {
+                "name": "Jeu vidéo / Console de jeu",
+                "description": "Produit gaming en parfait état de fonctionnement, testé et approuvé."
+            },
+            "Téléphonie, Tablette": {
+                "name": "Smartphone / Tablette récent(e)",
+                "description": "Appareil en excellent état, écran sans fissure, toutes fonctionnalités opérationnelles."
+            },
+            "Informatique, Logiciel": {
+                "name": "Matériel informatique",
+                "description": "Équipement informatique performant, testé et en parfait état de marche."
+            },
+            "TV, Image et Son": {
+                "name": "Équipement audiovisuel",
+                "description": "Appareil électronique en excellent état, toutes les fonctions opérationnelles."
+            },
+            "Maison": {
+                "name": "Article de décoration / mobilier",
+                "description": "Objet décoratif ou mobilier en bon état, sans défaut majeur."
+            },
+            "Électroménager": {
+                "name": "Appareil électroménager",
+                "description": "Électroménager en parfait état de fonctionnement, toutes fonctions testées."
+            },
+            "Alimentation, Boisson": {
+                "name": "Produit alimentaire",
+                "description": "Produit frais ou conserve, date de péremption respectée."
+            },
+            "Brico, Jardin, Animalerie": {
+                "name": "Outil de bricolage / Article jardin",
+                "description": "Outil ou accessoire en bon état, fonctionnel et prêt à l'emploi."
+            },
+            "Sport, Loisirs": {
+                "name": "Équipement sportif",
+                "description": "Matériel de sport en excellent état, peu utilisé, idéal pour la pratique."
+            },
+            "Mode": {
+                "name": "Vêtement / Accessoire de mode",
+                "description": "Article de mode en très bon état, taille conforme, couleurs préservées."
+            },
+            "Beauté": {
+                "name": "Produit de beauté / cosmétique",
+                "description": "Produit cosmétique en parfait état, emballage d'origine, non ouvert ou peu utilisé."
+            },
+            "Jouet, Enfant, Puériculture": {
+                "name": "Jouet / Article puériculture",
+                "description": "Article pour enfant en excellent état, propre et sécurisé, toutes pièces incluses."
+            }
+        }
+        
+        return suggestions.get(category_name, {
+            "name": "Produit en excellent état",
+            "description": "Article en très bon état général, conforme à la description."
+        })
+        
+    except Exception as e:
+        return {
+            "name": "Produit de qualité",
+            "description": "Article en bon état, prêt à être utilisé."
+        }
     clf, vectorizer = load_models()
     if clf is None or vectorizer is None:
         return None, None
@@ -612,23 +686,55 @@ with col_left:
     if uploaded_image:
         st.image(uploaded_image, caption="Image téléversée", use_column_width=True)
         st.session_state.uploaded_image = uploaded_image
+        
+        # Générer des suggestions automatiques basées sur l'analyse de l'image
+        if st.button("✨ Générer des suggestions automatiques", use_container_width=True):
+            with st.spinner("Analyse de l'image en cours..."):
+                # Faire une prédiction rapide pour obtenir la catégorie
+                pred, confidence = predict_category(uploaded_image, "", "")
+                if pred is not None:
+                    category_name = CATEGORIES.get(pred, "Produit")
+                    suggestions = generate_product_description(uploaded_image, category_name)
+                    
+                    st.session_state.suggested_name = suggestions["name"]
+                    st.session_state.suggested_description = suggestions["description"]
+                    st.success("Suggestions générées ! Vous pouvez les modifier si besoin.")
+                    st.rerun()
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_right:
     st.markdown('<div class="column-right">', unsafe_allow_html=True)
     st.markdown("**Informations produit (optionnel)**")
+    
+    # Suggestions en italique si disponibles
+    name_placeholder = "ex: iPhone 15 Pro Max"
+    description_placeholder = "Décrivez les caractéristiques, l'état, etc."
+    
+    if 'suggested_name' in st.session_state:
+        name_placeholder = f"Suggestion: {st.session_state.suggested_name}"
+    if 'suggested_description' in st.session_state:
+        description_placeholder = f"Suggestion: {st.session_state.suggested_description}"
+    
     designation = st.text_input(
         "Nom du produit",
-        placeholder="ex: iPhone 15 Pro Max",
-        help="Le nom ou titre de votre produit"
+        value=st.session_state.get('suggested_name', ''),
+        placeholder=name_placeholder,
+        help="Le nom ou titre de votre produit (suggestions générées automatiquement)"
     )
     
     description = st.text_area(
         "Description détaillée",
-        placeholder="Décrivez les caractéristiques, l'état, etc.",
+        value=st.session_state.get('suggested_description', ''),
+        placeholder=description_placeholder,
         height=100,
-        help="Plus d'informations pour une meilleure classification"
+        help="Plus d'informations pour une meilleure classification (suggestions générées automatiquement)"
     )
+    
+    # Afficher les suggestions en italique sous les champs
+    if 'suggested_name' in st.session_state and not designation:
+        st.markdown(f"*💡 Suggestion de nom: {st.session_state.suggested_name}*")
+    if 'suggested_description' in st.session_state and not description:
+        st.markdown(f"*💡 Suggestion de description: {st.session_state.suggested_description}*")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Bouton de classification
