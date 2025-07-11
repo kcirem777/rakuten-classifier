@@ -25,8 +25,18 @@ st.markdown("""
         --rakuten-red-hover: #a50000;
         --rakuten-black: #333333;
         --rakuten-gray: #666666;
-        --rakuten-light-gray: #f5f5f5;
+        --rakuten-light-gray: #f8f8f8;
         --rakuten-border: #e0e0e0;
+        --rakuten-white: #ffffff;
+    }
+    
+    /* Background principal en blanc */
+    .main {
+        background-color: var(--rakuten-white) !important;
+    }
+    
+    .stApp {
+        background-color: var(--rakuten-white) !important;
     }
     
     /* Reset du style Streamlit */
@@ -49,6 +59,17 @@ st.markdown("""
         font-family: 'Roboto', sans-serif;
         text-align: center;
         margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .logo-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
     }
     
     /* Container principal */
@@ -143,24 +164,26 @@ st.markdown("""
     }
     
     .category-result {
-        background: #fff5f5;
-        border: 1px solid var(--rakuten-red);
-        border-radius: 6px;
-        padding: 1rem;
+        background: var(--rakuten-white);
+        border: 2px solid var(--rakuten-red);
+        border-radius: 8px;
+        padding: 1.5rem;
         margin: 1rem 0;
         text-align: center;
+        box-shadow: 0 2px 8px rgba(191, 0, 0, 0.1);
     }
     
     .category-name {
         color: var(--rakuten-red);
-        font-size: 1.4rem;
+        font-size: 1.6rem;
         font-weight: 700;
         margin-bottom: 0.5rem;
     }
     
-    .confidence-score {
+    .category-subtitle {
         color: var(--rakuten-gray);
         font-size: 1rem;
+        margin-top: 0.5rem;
     }
     
     /* Sections */
@@ -348,10 +371,12 @@ def predict_category(uploaded_image, designation="", description=""):
 
 # ------------------- Interface Streamlit -------------------
 
-# Header Rakuten
+# Header Rakuten avec logo officiel
 st.markdown("""
 <div class="rakuten-header">
-    <h1 class="rakuten-logo">Rakuten</h1>
+    <div class="logo-container">
+        <img src="./rakuten-logo.png" alt="Rakuten" style="height: 60px; object-fit: contain;">
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
@@ -443,11 +468,11 @@ if 'prediction_result' in st.session_state:
     
     result = st.session_state.prediction_result
     
-    # Affichage style Rakuten
+    # Affichage style Rakuten (sans score de confiance)
     st.markdown(f"""
     <div class="category-result">
         <div class="category-name">{result['category_name']}</div>
-        <div class="confidence-score">Confiance: {result['confidence']:.1%}</div>
+        <div class="category-subtitle">Catégorie suggérée par l'IA</div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -465,15 +490,15 @@ if 'prediction_result' in st.session_state:
     
     # Informations additionnelles
     st.markdown("<br>", unsafe_allow_html=True)
-    with st.expander("ℹ️ Pourquoi cette catégorie ?"):
+    with st.expander("ℹ️ Comment ça marche ?"):
         st.write(f"""
-        Notre IA a analysé votre image et votre description pour suggérer la catégorie 
-        **{result['category_name']}** avec une confiance de **{result['confidence']:.1%}**.
+        Notre intelligence artificielle a analysé votre image et votre description 
+        pour suggérer la catégorie **{result['category_name']}**.
         
         Cette classification est basée sur :
-        - L'analyse visuelle de votre image (ResNet50)
-        - L'analyse textuelle de votre description (TF-IDF)
-        - Un modèle entraîné sur des milliers de produits Rakuten
+        - 🖼️ L'analyse visuelle de votre image
+        - 📝 L'analyse du texte de votre description  
+        - 🤖 Un modèle entraîné sur des milliers de produits Rakuten
         """)
 
 else:
@@ -488,14 +513,5 @@ else:
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Footer informations
+# Footer simple
 st.markdown("<br><br>", unsafe_allow_html=True)
-st.markdown("---")
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    st.metric("🎯 Précision du modèle", "39%")
-with col2:
-    st.metric("📊 Produits analysés", "407")
-with col3:
-    st.metric("🏷️ Catégories", "14")
